@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/ajax.js"></script>
+</head>
+
+<body>
+    <div class="login">
+        <div class="center">
+            <h1>Login</h1>
+            <div class="inputLi">
+                <strong>账户</strong>
+                <input type="text" id="username" placeholder="请输入">
+            </div>
+            <div class="inputLi">
+                <strong>密码</strong>
+                <input type="password" id="password" placeholder="请输入">
+            </div>
+            <div class="inputLi">
+                <button onclick="login()">登录</button>
+            </div>
+        </div>
+    </div>
+<script>
+    function login() {
+        // 抓取用户名和密码
+        var username = $("#username").val();
+        var password = $("#password").val();
+        // 使用 ajax 调用登录接口
+        var options = {
+            url: '/api/user',
+            data: { 'name': username, 'password': password },
+            type: 'POST',
+            contentType: 'application/x-www-form-urlencoded'
+        }
+        $.getData(options, (data) => {
+            console.log(data);
+            if (data != null) {
+                if (data.code == 0) {
+                    // 跳转到首页
+                    window.location.href="/chat";
+                } else {
+                    alert(data.desc);
+                }
+            }
+        });
+    }
+</script>
+</body>
+
+</html>

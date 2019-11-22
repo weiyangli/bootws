@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>聊天室</title>
+    <link rel="stylesheet" type="text/css" href="http://unpkg.com/iview/dist/styles/iview.css">
+    <link rel="stylesheet/less" type="text/css" href="/css/chat.less" />
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="http://vuejs.org/js/vue.min.js"></script>
+    <script type="text/javascript" src="http://unpkg.com/iview/dist/iview.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/less.min.js"></script>
+    <script src="/js/ajax.js"></script>
+    <script src="/js/webSocket.js"></script>
+    <script src="/js/sockjs.min.js"></script>
+    <script src="/js/stomp.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="left-content">
+            <i-card v-for="(group, index) in groups" :key="index" class="chat-box" :class="{ active: groupId === group.id }" @click="changeChat(group.id)">
+                <h3>{{ group.groupName }}</h3>
+            </i-card>
+        </div>
+        <div class="right-content">
+            <i-input v-model="text" type="textarea" placeholder="Enter something..." style="width: 100%;margin-bottom: 12px" ></i-input>
+            <i-button type="success" @click="send()" style="margin-left: 12px">Send</i-button>
+            <i-button @click="closeWebSocket()">Close</i-button>
+            <div id="message">
+            </div>
+        </div>
+    </div>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            groups: [],
+            groupId: 0,
+            text: '',
+        },
+        mounted: function () {
+        },
+        created() {
+            this.findGroups();
+        },
+        methods: {
+            // 查询所有的小组列表
+            findGroups() {
+                let self = this;
+                this.data = [];
+                let options = {
+                    url: '/api/group',
+                    type: 'GET',
+                }
+                $.getData(options, (result) => {
+                    if (result.data.length > 0) {
+                        self.groups.push(...result.data);
+                        // 设置第一个小组打开
+                        self.groupId = result.data[0].id;
+                        // 连接 websocket，打开聊天窗口
+                        content(result.data[0].id);
+                    } else {
+                        self.$Message.info('暂无小组');
+                    }
+                });
+            },
+            // 切换聊天小组
+            changeChat(groupId) {
+                this.groupId = groupId;
+                // 连接 websocket，打开聊天窗口
+                this.text = '';
+                content(groupId);
+            },
+            //关闭连接
+            closeWebSocket(){
+                websocket.close();
+                this.$Message.info('链接已关闭');
+                this.text = '';
+            },
+            send(){
+                websocket.send(this.text);
+                this.text = '';
+            }
+        }
+    })
+</script>
+</body>
+</html>
